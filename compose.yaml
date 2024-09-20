@@ -1,0 +1,50 @@
+services:
+  main:
+    image: caddy:2-alpine
+    depends_on:
+      - one
+      - two
+      - three
+    networks:
+      - network_main
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    ports:
+      - "80:80"
+    
+    
+  one:
+    image: node:18-alpine
+    command: sh -c "npm install && npm run dev"
+    working_dir: /app
+    networks:
+      - network_main
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+
+  two:
+    image: node:18-alpine
+    command: sh -c "npm install && npm run dev"
+    working_dir: /app
+    networks:
+      - network_main
+    ports:
+      - "4000:3000"
+    volumes:
+      - ./:/app
+  
+  three:
+    image: node:18-alpine
+    command: sh -c "npm install && npm run dev"
+    working_dir: /app
+    networks:
+      - network_main
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./:/app
+
+networks:
+  network_main:

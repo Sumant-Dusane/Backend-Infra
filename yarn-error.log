@@ -1,0 +1,40 @@
+Arguments: 
+  /usr/local/bin/node /opt/yarn-v1.22.19/bin/yarn.js install
+
+PATH: 
+  /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  18.20.4
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: EEXIST: file already exists, symlink '../../../mime/cli.js' -> '/app/node_modules/send/node_modules/.bin/mime'
+
+npm manifest: 
+  {
+    "name": "load-balancer",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+      "dev": "node src/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+      "express": "^4.21.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

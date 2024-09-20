@@ -1,0 +1,10 @@
+:80 {
+    encode zstd gzip
+
+    reverse_proxy one:3000 two:3000 three:3000 {
+        health_uri /
+        health_interval 5s
+        health_timeout 3s
+        health_status 200
+    }
+}
