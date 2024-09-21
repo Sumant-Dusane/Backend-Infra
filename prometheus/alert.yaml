@@ -1,0 +1,5 @@
+groups:
+  - name: CrashAlerts
+    rules:
+      - alert: InstanceDown
+        expr: http_requests_incoming_bucket{status="500"} > 0 

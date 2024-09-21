@@ -1,3 +1,6 @@
+networks:
+  network_main:
+
 services:
   main:
     image: caddy:2-alpine
@@ -11,7 +14,19 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
     ports:
       - "80:80"
-    
+  
+  prometheus:
+    image: prom/prometheus
+    user: root
+    networks:
+      - network_main
+    ports:
+      - "9000:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - /prometheus-data:/prometheus
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yaml
+  
     
   one:
     image: node:18-alpine
@@ -45,6 +60,3 @@ services:
       - "8080:3000"
     volumes:
       - ./:/app
-
-networks:
-  network_main:
