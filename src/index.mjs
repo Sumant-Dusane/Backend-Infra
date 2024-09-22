@@ -10,15 +10,13 @@ const httpRequestMonitor = new Histogram({
   name: "http_requests_incoming",
   help: "Total http requests",
   labelNames: ["method", "route", "status"],
-  buckets: [0.10, 5, 15, 50, 100, 200, 300, 400, 500]
+  buckets: [0.1, 5, 15, 50, 100, 200, 300, 400, 500],
 });
-
 
 app.use((req, res, next) => {
   res.locals.startEpoch = Date.now();
   next();
 });
-
 
 app.get("/", (req, res, next) => {
   res.status(200).send("SHREE SWAMI SAMARTHA");
@@ -33,7 +31,7 @@ app.post("/", (req, res, next) => {
     }
     res.status(200).send({ result: a + b });
   } catch (error) {
-    logger.error(`Error: ${error}`);
+    logger.error(`Error: ${error}`, { statusCode: 500 });
     res.status(500).send({ error });
   }
   next();
@@ -46,7 +44,7 @@ app.get("/metrics", async (req, res) => {
   res.send(metrics);
 });
 
-// middleware to monitor http requests 
+// middleware to monitor http requests
 app.use((req, res, next) => {
   const responseTime = Date.now() - res.locals.startEpoch;
   httpRequestMonitor
@@ -55,14 +53,14 @@ app.use((req, res, next) => {
   next();
 });
 
-const server = app.listen(3000, () => logger.info("Server listening on 3000"));
+const server = app.listen(3000, () => logger.info("Server listening on 3000", {statusCode: 200}));
 
 // graceful shutdown
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   clearInterval(metricInterval);
   server.close((err) => {
-    if(err) {
-      logger.error(err);
+    if (err) {
+      logger.error(err, {statusCode: 300});
       process.exit(1);
     }
     process.exit(0);

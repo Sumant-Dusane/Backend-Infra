@@ -1,34 +1,64 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { createLogger, format as _format, transports as _transports } from 'winston';
-import { join } from 'path';
+import {
+  createLogger,
+  format as _format,
+  transports as _transports,
+} from "winston";
+import Transport from "winston-transport";
+import { Client } from "@opensearch-project/opensearch";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const host = "opensearch";
+const protocol = "http"; // <-- Changing http to https worked.
+const ports = [9200, 9600];
+const auth = "admin:admin"; // For testing only. Don't store credentials in code.
+
+// OpenSearch client configuration
+const opensearchClient = new Client({
+  nodes: [
+    protocol + "://" + auth + "@" + host + ":" + ports[0],
+    protocol + "://" + auth + "@" + host + ":" + ports[1],
+  ],
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+class OpenSearchTransport extends Transport {
+  constructor() {
+    super();
+    this.name = "opensearchTransport";
+    this.level = "info";
+  }
+
+  log(info, next) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      message: info.message,
+      statusCode: info.statusCode || null,
+      container: process.env.HOSTNAME || "unknown-container",
+    };
+
+    opensearchClient
+      .index({
+        index: "lb-log",
+        body: logEntry,
+      })
+      .catch((err) => {
+        console.error("Error indexing log entry: ", err);
+      });
+
+    next();
+  }
+}
 
 const logger = createLogger({
-  level: 'info',
-  format: _format.combine(
-    _format.timestamp(),
-    _format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    })
-  ),
+  level: "info",
+  format: _format.combine(_format.timestamp(), _format.json()),
   transports: [
-    // Log to console
+    new OpenSearchTransport(),
     new _transports.Console(),
-    
-    // Log to file (error level)
-    new _transports.File({ 
-      filename: join(__dirname, 'logs', 'error.log'), 
-      level: 'error' 
-    }),
-    
-    // Log all to file
-    new _transports.File({ 
-      filename: join(__dirname, 'logs', 'combined.log') 
-    })
-  ]
+  ],
 });
+
+logger.info("Logger initialized successfully", { statusCode: 200 });
 
 export default logger;
