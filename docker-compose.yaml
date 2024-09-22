@@ -62,7 +62,21 @@ services:
       - "5601:5601"
     depends_on:
       - opensearch
-  
+
+  postgresdb:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: postgres -c max_connections=200
+    networks:
+      - network_main
+    volumes:
+      - ./src/config/initdb.sql:/docker-entrypoint-initdb.d/init.sql
+    shm_size: 128mb
+    ports:
+      - 5432:5432
     
   one:
     image: node:18-alpine

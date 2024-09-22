@@ -50,13 +50,23 @@ class OpenSearchTransport extends Transport {
   }
 }
 
+const prettyJson = _format.printf((info) => {
+  if (info.message.constructor === Object) {
+    info.message = JSON.stringify(info.message, null, 4);
+  }
+  return `${info.level}: ${info.message}`;
+});
+
 const logger = createLogger({
   level: "info",
-  format: _format.combine(_format.timestamp(), _format.json()),
-  transports: [
-    new OpenSearchTransport(),
-    new _transports.Console(),
-  ],
+  format: _format.combine(
+    _format.timestamp(),
+    _format.json(),
+    _format.colorize(),
+    _format.prettyPrint(),
+    prettyJson
+  ),
+  transports: [new OpenSearchTransport(), new _transports.Console()],
 });
 
 logger.info("Logger initialized successfully", { statusCode: 200 });
